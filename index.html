@@ -28,11 +28,13 @@
             padding: 25px;
             box-sizing: border-box;
         }
-        h1, h2 {
+        h1, h2, h3 {
             text-align: center;
             color: #2c3e50;
-            border-bottom: 2px solid #3498db;
             padding-bottom: 10px;
+        }
+        h1, h2 {
+            border-bottom: 2px solid #3498db;
         }
         #chart-wrapper {
             position: relative;
@@ -53,6 +55,69 @@
             font-size: 1.1em;
             font-weight: bold;
             color: #2980b9;
+        }
+
+        /* ΝΕΑ ΣΤΥΛ ΓΙΑ ΤΗ ΦΟΡΜΑ */
+        .form-container {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+        #addWeightForm {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: flex-end;
+            gap: 15px;
+        }
+        #addWeightForm > div {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+        #addWeightForm label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #555;
+        }
+        #addWeightForm input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        #addWeightForm button {
+            padding: 10px 20px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+            height: 42px; /* Στοίχιση με τα input */
+        }
+        #addWeightForm button:hover {
+            background-color: #219d55;
+        }
+        #clearDataButton {
+            display: block;
+            margin: 15px auto 0;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            font-size: 0.9em;
+            cursor: pointer;
+        }
+        #clearDataButton:hover {
+            background-color: #c0392b;
         }
         .disclaimer {
             font-size: 0.9em;
@@ -76,11 +141,28 @@
             <strong>Τελευταία Μέτρηση:</strong>
             <p id="currentStatus">Δεν υπάρχουν δεδομένα</p>
         </div>
+
+        <div class="form-container">
+            <h3>Προσθήκη Νέας Μέτρησης</h3>
+            <form id="addWeightForm">
+                <div>
+                    <label for="inputDate">Ημερομηνία</label>
+                    <input type="date" id="inputDate" name="date" required>
+                </div>
+                <div>
+                    <label for="inputWeight">Βάρος (π.χ. 63.5)</label>
+                    <input type="number" id="inputWeight" name="weight" step="0.1" min="0" required>
+                </div>
+                <button type="submit">Προσθήκη</button>
+            </form>
+            <button id="clearDataButton" title="Διαγράφει όλες τις μετρήσεις που προσθέσατε από τη φόρμα (δεν σβήνει την αρχική μέτρηση του κώδικα)">Εκκαθάριση Αποθηκευμένων Μετρήσεων</button>
+        </div>
         
         <p class="disclaimer">
             <strong>Σημαντική Σημείωση:</strong> Αυτό το διάγραμμα βασίζεται σε γενικές κατευθυντήριες γραμμές
             (IOM) για δίδυμες κυήσεις με φυσιολογικό αρχικό ΔΜΣ (17-25kg συνολική αύξηση).
             Δεν αντικαθιστά σε καμία περίπτωση τις συμβουλές του γυναικολόγου σας.
+            Οι μετρήσεις που προσθέτετε αποθηκεύονται τοπικά στον browser σας.
         </p>
     </div>
 
@@ -89,75 +171,96 @@
         // === ΡΥΘΜΙΣΕΙΣ (ΕΔΩ ΑΛΛΑΖΕΤΕ ΤΙΣ ΤΙΜΕΣ) ===
         // ==================================================================
         
-        // 1. Ημερομηνία Τελευταίας Περιόδου (ΤΕΡ)
-        // Μορφή: "ΕΤΟΣ-ΜΗΝΑΣ-ΗΜΕΡΑ"
         const lmpDateString = "2025-07-03";
-
-        // 2. Αρχικό Βάρος (σε κιλά)
-        // Το βάρος πριν την εγκυμοσύνη
         const startWeight = 57;
-
-        // 3. Δεδομένα Μετρήσεων Βάρους
-        // Προσθέστε εδώ τις μετρήσεις σας. Μπορείτε να έχετε όσες θέλετε.
-        // Η σελίδα θα σχεδιάσει αυτόματα τη γραμμή προόδου.
-        //
-        // Mορφή: { date: "ΕΤΟΣ-ΜΗΝΑΣ-ΗΜΕΡΑ", weight: ΒΑΡΟΣ },
-        // (Το κόμμα στο τέλος της τελευταίας γραμμής είναι ΟΚ)
-        const actualWeightDataPoints = [
+        
+        // Αυτή είναι η "αρχική" λίστα.
+        // Μπορείτε να την αφήσετε και κενή: const initialDataPoints = [];
+        const initialDataPoints = [
             { date: "2025-10-26", weight: 62.7 },
-            
-            // --- Προσθέστε τις νέες μετρήσεις σας εδώ ---
-            // { date: "2025-11-02", weight: 63.5 },
-            // { date: "2025-11-09", weight: 64.1 },
-            // { date: "2025-11-16", weight: 64.8 },
-
         ];
 
         // ==================================================================
-        // === ΤΕΛΟΣ ΡΥΘΜΙΣΕΩΝ (Μην αλλάξετε κάτι παρακάτω) ===
+        // === ΝΕΑ ΛΟΓΙΚΗ (LocalStorage & Φόρμα) ===
         // ==================================================================
 
-        try {
-            const lmpDate = new Date(lmpDateString);
-            if (isNaN(lmpDate)) throw new Error("Η ημερομηνία ΤΕΡ δεν είναι έγκυρη.");
+        // Το "κλειδί" για την τοπική αποθήκευση
+        const STORAGE_KEY = 'twinWeightTrackerData';
 
-            // Υπολογισμός μοντέλου βάρους (Βάση: 17-25kg για φυσιολογικό ΔΜΣ σε δίδυμα)
-            // Τρίμηνο 1 (0-14 εβδ): 2-4 kg αύξηση
-            // Τρίμηνο 2/3 (15-40 εβδ): ~0.58-0.81 kg/εβδομάδα
+        // Μεταβλητή για να κρατάμε το chart και να το κάνουμε update
+        let weightChartInstance = null;
+
+        /**
+         * Φορτώνει τα δεδομένα (αρχικά + αποθηκευμένα)
+         */
+        function loadAllData() {
+            const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            // Συνδυάζει τα αρχικά δεδομένα του κώδικα με αυτά από τη μνήμη
+            const allData = [...initialDataPoints, ...savedData];
+            
+            // Ταξινόμηση κατά ημερομηνία
+            return allData.sort((a, b) => new Date(a.date) - new Date(b.date));
+        }
+
+        /**
+         * Αποθηκεύει ένα *νέο* σημείο δεδομένων
+         */
+        function saveDataPoint(dataPoint) {
+            const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            savedData.push(dataPoint);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData));
+        }
+
+        /**
+         * Καθαρίζει τα *αποθηκευμένα* δεδομένα (όχι τα αρχικά)
+         */
+        function clearSavedData() {
+            if (confirm("Είστε σίγουρος/η ότι θέλετε να διαγράψετε όλες τις αποθηκευμένες μετρήσεις; \n(Η αρχική μέτρηση των 62.7kg θα παραμείνει).")) {
+                localStorage.removeItem(STORAGE_KEY);
+                renderChart(); // Ξανα-σχεδίασε το chart μόνο με τα αρχικά δεδομένα
+            }
+        }
+
+        /**
+         * Η ΚΥΡΙΑ ΣΥΝΑΡΤΗΣΗ ΠΟΥ ΣΧΕΔΙΑΖΕΙ ΤΟ CHART
+         */
+        function renderChart() {
+            const lmpDate = new Date(lmpDateString);
+            if (isNaN(lmpDate)) {
+                console.error("Η ημερομηνία ΤΕΡ δεν είναι έγκυρη.");
+                return;
+            }
+
+            // Υπολογισμός μοντέλου βάρους (όπως και πριν)
             const minGainT1 = 2;
             const maxGainT1 = 4;
-            const minGainPerWeekT23 = (17 - minGainT1) / (40 - 14); // ~0.577
-            const maxGainPerWeekT23 = (25 - maxGainT1) / (40 - 14); // ~0.807
+            const minGainPerWeekT23 = (17 - minGainT1) / (40 - 14);
+            const maxGainPerWeekT23 = (25 - maxGainT1) / (40 - 14);
             
             const labels = [];
             const minWeightData = [];
             const maxWeightData = [];
-            const actualData = new Array(41).fill(null); // 0-40 εβδομάδες
-
+            
             for (let week = 0; week <= 40; week++) {
                 labels.push(`Εβδ. ${week}`);
-                
                 let minGain, maxGain;
-                
-                if (week === 0) {
-                    minGain = 0;
-                    maxGain = 0;
-                } else if (week <= 14) {
-                    // Γραμμική αύξηση στο 1ο τρίμηνο
+                if (week === 0) { minGain = 0; maxGain = 0; }
+                else if (week <= 14) {
                     minGain = (minGainT1 / 14) * week;
                     maxGain = (maxGainT1 / 14) * week;
                 } else {
-                    // Γραμμική αύξηση στο 2ο/3ο τρίμηνο
                     let weeksIntoT23 = week - 14;
                     minGain = minGainT1 + (minGainPerWeekT23 * weeksIntoT23);
                     maxGain = maxGainT1 + (maxGainPerWeekT23 * weeksIntoT23);
                 }
-                
                 minWeightData.push(parseFloat((startWeight + minGain).toFixed(1)));
                 maxWeightData.push(parseFloat((startWeight + maxGain).toFixed(1)));
             }
 
-            // Επεξεργασία των πραγματικών μετρήσεων
+            // Επεξεργασία των πραγματικών μετρήσεων (από τη νέα συνάρτηση)
+            const actualWeightDataPoints = loadAllData();
+            const actualData = new Array(41).fill(null); // 0-40 εβδομάδες
+
             if (actualWeightDataPoints.length > 0) {
                 actualWeightDataPoints.forEach(point => {
                     const pointDate = new Date(point.date);
@@ -171,18 +274,26 @@
                     }
                 });
 
-                // Εμφάνιση της τελευταίας μέτρησης
+                // Εμφάνιση της *τελευταίας* μέτρησης
                 const latestData = actualWeightDataPoints[actualWeightDataPoints.length - 1];
                 const latestDate = new Date(latestData.date);
                 const diffTime = latestDate.getTime() - lmpDate.getTime();
                 const latestWeek = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
                 document.getElementById('currentStatus').innerText = 
                     `Εβδομάδα ${latestWeek} (${latestData.date}) | Βάρος: ${latestData.weight} kg`;
+            } else {
+                 document.getElementById('currentStatus').innerText = "Δεν υπάρχουν δεδομένα";
             }
 
             // Σχεδίαση του διαγράμματος
             const ctx = document.getElementById('weightChart').getContext('2d');
-            const weightChart = new Chart(ctx, {
+            
+            // **Σημαντικό:** Καταστρέφουμε το παλιό chart πριν σχεδιάσουμε το νέο
+            if (weightChartInstance) {
+                weightChartInstance.destroy();
+            }
+
+            weightChartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
@@ -201,9 +312,9 @@
                             data: maxWeightData,
                             borderColor: 'rgba(54, 162, 235, 0.5)',
                             borderWidth: 2,
-                            backgroundColor: 'rgba(54, 162, 235, 0.1)', // Χρώμα περιοχής
+                            backgroundColor: 'rgba(54, 162, 235, 0.1)',
                             pointRadius: 0,
-                            fill: '-1', // Γεμίζει την περιοχή μέχρι το προηγούμενο dataset (το min)
+                            fill: '-1',
                             tension: 0.1
                         },
                         {
@@ -215,8 +326,8 @@
                             pointRadius: 5,
                             pointHoverRadius: 8,
                             pointBackgroundColor: 'rgb(255, 99, 132)',
-                            showLine: true, // Σύνδεση των σημείων με γραμμή
-                            spanGaps: true, // Συνεχίζει τη γραμμή αν λείπουν ενδιάμεσες τιμές
+                            showLine: true,
+                            spanGaps: true,
                             tension: 0.1
                         }
                     ]
@@ -236,9 +347,7 @@
                             callbacks: {
                                 label: function(context) {
                                     let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
+                                    if (label) { label += ': '; }
                                     if (context.parsed.y !== null) {
                                         label += context.parsed.y + ' kg';
                                     }
@@ -249,22 +358,11 @@
                     },
                     scales: {
                         x: {
-                            title: {
-                                display: true,
-                                text: 'Εβδομάδα Κύησης'
-                            },
-                            ticks: {
-                                // Δείχνει ετικέτα ανά 2 εβδομάδες για να μην "μποτιλιάρει"
-                                autoSkip: true,
-                                maxTicksLimit: 21 
-                            }
+                            title: { display: true, text: 'Εβδομάδα Κύησης' },
+                            ticks: { autoSkip: true, maxTicksLimit: 21 }
                         },
                         y: {
-                            title: {
-                                display: true,
-                                text: 'Βάρος (kg)'
-                            },
-                            // Ξεκινάει τη ζυγαριά λίγο κάτω από το αρχικό βάρος
+                            title: { display: true, text: 'Βάρος (kg)' },
                             suggestedMin: startWeight - 3,
                             suggestedMax: startWeight + 28
                         }
@@ -275,11 +373,42 @@
                     }
                 }
             });
-        } catch (error) {
-            console.error("Chart Error:", error);
-            document.getElementById('currentStatus').innerText = "Σφάλμα φόρτωσης: " + error.message;
-            document.getElementById('chart-wrapper').style.display = "none";
         }
+        
+        // ==================================================================
+        // === Event Listeners (ΕΚΚΙΝΗΣΗ) ===
+        // ==================================================================
+
+        // 1. Όταν φορτώσει η σελίδα, σχεδίασε το chart
+        document.addEventListener('DOMContentLoaded', renderChart);
+
+        // 2. Όταν η φόρμα υποβληθεί
+        document.getElementById('addWeightForm').addEventListener('submit', function(e) {
+            e.preventDefault(); // Σταμάτα την ανανέωση της σελίδας
+            
+            const dateValue = document.getElementById('inputDate').value;
+            const weightValue = document.getElementById('inputWeight').value;
+
+            if (dateValue && weightValue) {
+                const newDataPoint = {
+                    date: dateValue,
+                    weight: parseFloat(weightValue)
+                };
+                
+                // Αποθήκευσε το νέο σημείο
+                saveDataPoint(newDataPoint);
+                
+                // Ξανα-σχεδίασε το chart με τα νέα δεδομένα
+                renderChart();
+                
+                // Καθάρισε τη φόρμα
+                e.target.reset();
+            }
+        });
+        
+        // 3. Όταν πατηθεί το κουμπί εκκαθάρισης
+        document.getElementById('clearDataButton').addEventListener('click', clearSavedData);
+
     </script>
 </body>
 </html>
