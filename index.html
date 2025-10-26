@@ -1,160 +1,285 @@
 <!DOCTYPE html>
 <html lang="el">
 <head>
-  <meta charset="UTF-8">
-  <title>Θανάσης + Έρση = LFE</title>
-  <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      min-height: 100vh;
-      /* Ροζ διαβαθμισμένο φόντο (προσαρμόζεις τα χρώματα όπως θες) */
-      background: linear-gradient(135deg, #ffc1cc 0%, #ffb7e7 50%, #ffd1dc 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-    #mainText {
-      font-size: 3rem;
-      color: #7a1f4c;
-      text-align: center;
-      opacity: 0;
-      transition: opacity 2s ease;
-      font-family: 'Arial Rounded MT Bold', Arial, sans-serif;
-      letter-spacing: 2px;
-      z-index: 2;
-    }
-
-    /* Κλείδωμα στο κέντρο */
-    #centerContainer {
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: absolute;
-      top: 0; left: 0;
-      z-index: 1;
-      pointer-events: none;
-    }
-    /* Ζώνη για το canvas πυροτεχνημάτων πίσω από το κείμενο */
-    #fireworks {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-      pointer-events: none;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Παρακολούθηση Βάρους - Δίδυμη Κύηση</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            padding: 25px;
+            box-sizing: border-box;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        #chart-wrapper {
+            position: relative;
+            height: 450px;
+        }
+        canvas {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .info-box {
+            text-align: center;
+            background-color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        #currentStatus {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #2980b9;
+        }
+        .disclaimer {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            text-align: center;
+            margin-top: 20px;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
-  <canvas id="fireworks"></canvas>
-  <div id="centerContainer">
-    <div id="mainText">Θανάσης + Έρση = LFE</div>
-  </div>
-  <script>
-    // Σταδιακή εμφάνιση κειμένου
-    const mainText = document.getElementById('mainText');
-    setTimeout(() => {
-      mainText.style.opacity = '1';
-      setTimeout(() => { startFireworks(); }, 2500); // εκκίνηση πυροτεχνημάτων μετά το fade-in
-    }, 800);
+    <div class="container">
+        <h1>Διάγραμμα Αύξησης Βάρους</h1>
+        <h2>Δίδυμη Κύηση</h2>
+        
+        <div id="chart-wrapper">
+            <canvas id="weightChart"></canvas>
+        </div>
+        
+        <div class="info-box">
+            <strong>Τελευταία Μέτρηση:</strong>
+            <p id="currentStatus">Δεν υπάρχουν δεδομένα</p>
+        </div>
+        
+        <p class="disclaimer">
+            <strong>Σημαντική Σημείωση:</strong> Αυτό το διάγραμμα βασίζεται σε γενικές κατευθυντήριες γραμμές
+            (IOM) για δίδυμες κυήσεις με φυσιολογικό αρχικό ΔΜΣ (17-25kg συνολική αύξηση).
+            Δεν αντικαθιστά σε καμία περίπτωση τις συμβουλές του γυναικολόγου σας.
+        </p>
+    </div>
 
-    // Πυροτεχνήματα με Canvas
-    function randomColor() {
-      const colors = [
-        '#ff3cac', '#784ba0', '#ffb7e7', '#fecfef', '#b721ff',
-        '#f6d365', '#fccb90', '#ff5e62', '#7ee8fa', '#eec0c6'
-      ];
-      return colors[Math.floor(Math.random() * colors.length)];
-    }
+    <script>
+        // ==================================================================
+        // === ΡΥΘΜΙΣΕΙΣ (ΕΔΩ ΑΛΛΑΖΕΤΕ ΤΙΣ ΤΙΜΕΣ) ===
+        // ==================================================================
+        
+        // 1. Ημερομηνία Τελευταίας Περιόδου (ΤΕΡ)
+        // Μορφή: "ΕΤΟΣ-ΜΗΝΑΣ-ΗΜΕΡΑ"
+        const lmpDateString = "2025-07-03";
 
-    function startFireworks() {
-      const canvas = document.getElementById('fireworks');
-      const ctx = canvas.getContext('2d');
-      resizeCanvas();
+        // 2. Αρχικό Βάρος (σε κιλά)
+        // Το βάρος πριν την εγκυμοσύνη
+        const startWeight = 57;
 
-      window.addEventListener('resize', resizeCanvas);
+        // 3. Δεδομένα Μετρήσεων Βάρους
+        // Προσθέστε εδώ τις μετρήσεις σας. Μπορείτε να έχετε όσες θέλετε.
+        // Η σελίδα θα σχεδιάσει αυτόματα τη γραμμή προόδου.
+        //
+        // Mορφή: { date: "ΕΤΟΣ-ΜΗΝΑΣ-ΗΜΕΡΑ", weight: ΒΑΡΟΣ },
+        // (Το κόμμα στο τέλος της τελευταίας γραμμής είναι ΟΚ)
+        const actualWeightDataPoints = [
+            { date: "2025-10-26", weight: 62.7 },
+            
+            // --- Προσθέστε τις νέες μετρήσεις σας εδώ ---
+            // { date: "2025-11-02", weight: 63.5 },
+            // { date: "2025-11-09", weight: 64.1 },
+            // { date: "2025-11-16", weight: 64.8 },
 
-      let fireworks = [];
+        ];
 
-      function Firework() {
-        this.x = Math.random() * canvas.width;
-        this.y = canvas.height * (0.4 + 0.5 * Math.random());
-        this.count = 48;
-        this.r = 2 + 3 * Math.random();
-        this.sparks = [];
-        let color = randomColor();
-        for (let i=0; i<this.count; i++) {
-          const angle = (i / this.count) * 2 * Math.PI;
-          const speed = 1 + 2 * Math.random();
-          this.sparks.push({
-            x: this.x, y: this.y,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed,
-            alpha: 1,
-            color,
-            decay: 0.013 + 0.02 * Math.random()
-          });
+        // ==================================================================
+        // === ΤΕΛΟΣ ΡΥΘΜΙΣΕΩΝ (Μην αλλάξετε κάτι παρακάτω) ===
+        // ==================================================================
+
+        try {
+            const lmpDate = new Date(lmpDateString);
+            if (isNaN(lmpDate)) throw new Error("Η ημερομηνία ΤΕΡ δεν είναι έγκυρη.");
+
+            // Υπολογισμός μοντέλου βάρους (Βάση: 17-25kg για φυσιολογικό ΔΜΣ σε δίδυμα)
+            // Τρίμηνο 1 (0-14 εβδ): 2-4 kg αύξηση
+            // Τρίμηνο 2/3 (15-40 εβδ): ~0.58-0.81 kg/εβδομάδα
+            const minGainT1 = 2;
+            const maxGainT1 = 4;
+            const minGainPerWeekT23 = (17 - minGainT1) / (40 - 14); // ~0.577
+            const maxGainPerWeekT23 = (25 - maxGainT1) / (40 - 14); // ~0.807
+            
+            const labels = [];
+            const minWeightData = [];
+            const maxWeightData = [];
+            const actualData = new Array(41).fill(null); // 0-40 εβδομάδες
+
+            for (let week = 0; week <= 40; week++) {
+                labels.push(`Εβδ. ${week}`);
+                
+                let minGain, maxGain;
+                
+                if (week === 0) {
+                    minGain = 0;
+                    maxGain = 0;
+                } else if (week <= 14) {
+                    // Γραμμική αύξηση στο 1ο τρίμηνο
+                    minGain = (minGainT1 / 14) * week;
+                    maxGain = (maxGainT1 / 14) * week;
+                } else {
+                    // Γραμμική αύξηση στο 2ο/3ο τρίμηνο
+                    let weeksIntoT23 = week - 14;
+                    minGain = minGainT1 + (minGainPerWeekT23 * weeksIntoT23);
+                    maxGain = maxGainT1 + (maxGainPerWeekT23 * weeksIntoT23);
+                }
+                
+                minWeightData.push(parseFloat((startWeight + minGain).toFixed(1)));
+                maxWeightData.push(parseFloat((startWeight + maxGain).toFixed(1)));
+            }
+
+            // Επεξεργασία των πραγματικών μετρήσεων
+            if (actualWeightDataPoints.length > 0) {
+                actualWeightDataPoints.forEach(point => {
+                    const pointDate = new Date(point.date);
+                    if (!isNaN(pointDate) && point.weight > 0) {
+                        const diffTime = pointDate.getTime() - lmpDate.getTime();
+                        const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
+                        
+                        if (diffWeeks >= 0 && diffWeeks <= 40) {
+                            actualData[diffWeeks] = point.weight;
+                        }
+                    }
+                });
+
+                // Εμφάνιση της τελευταίας μέτρησης
+                const latestData = actualWeightDataPoints[actualWeightDataPoints.length - 1];
+                const latestDate = new Date(latestData.date);
+                const diffTime = latestDate.getTime() - lmpDate.getTime();
+                const latestWeek = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
+                document.getElementById('currentStatus').innerText = 
+                    `Εβδομάδα ${latestWeek} (${latestData.date}) | Βάρος: ${latestData.weight} kg`;
+            }
+
+            // Σχεδίαση του διαγράμματος
+            const ctx = document.getElementById('weightChart').getContext('2d');
+            const weightChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Ελάχιστο Συνιστώμενο Βάρος',
+                            data: minWeightData,
+                            borderColor: 'rgba(54, 162, 235, 0.5)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Μέγιστο Συνιστώμενο Βάρος',
+                            data: maxWeightData,
+                            borderColor: 'rgba(54, 162, 235, 0.5)',
+                            borderWidth: 2,
+                            backgroundColor: 'rgba(54, 162, 235, 0.1)', // Χρώμα περιοχής
+                            pointRadius: 0,
+                            fill: '-1', // Γεμίζει την περιοχή μέχρι το προηγούμενο dataset (το min)
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Το Βάρος σας',
+                            data: actualData,
+                            borderColor: 'rgb(255, 99, 132)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointHoverRadius: 8,
+                            pointBackgroundColor: 'rgb(255, 99, 132)',
+                            showLine: true, // Σύνδεση των σημείων με γραμμή
+                            spanGaps: true, // Συνεχίζει τη γραμμή αν λείπουν ενδιάμεσες τιμές
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Εβδομαδιαία Πορεία Βάρους (kg) σε Δίδυμη Κύηση',
+                            font: { size: 16 }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y + ' kg';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Εβδομάδα Κύησης'
+                            },
+                            ticks: {
+                                // Δείχνει ετικέτα ανά 2 εβδομάδες για να μην "μποτιλιάρει"
+                                autoSkip: true,
+                                maxTicksLimit: 21 
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Βάρος (kg)'
+                            },
+                            // Ξεκινάει τη ζυγαριά λίγο κάτω από το αρχικό βάρος
+                            suggestedMin: startWeight - 3,
+                            suggestedMax: startWeight + 28
+                        }
+                    },
+                    hover: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Chart Error:", error);
+            document.getElementById('currentStatus').innerText = "Σφάλμα φόρτωσης: " + error.message;
+            document.getElementById('chart-wrapper').style.display = "none";
         }
-      }
-      Firework.prototype.update = function() {
-        this.sparks.forEach(s => {
-          s.x += s.vx;
-          s.y += s.vy;
-          s.vy += 0.021; // gravity
-          s.alpha -= s.decay;
-        });
-        // remove faded sparks
-        this.sparks = this.sparks.filter(s => s.alpha > 0.1);
-        return this.sparks.length > 0;
-      };
-      Firework.prototype.draw = function(ctx) {
-        this.sparks.forEach(s => {
-          ctx.save();
-          ctx.globalAlpha = Math.max(s.alpha,0);
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, 2.7, 0, 2 * Math.PI);
-          ctx.fillStyle = s.color;
-          ctx.shadowColor = s.color;
-          ctx.shadowBlur = 12;
-          ctx.fill();
-          ctx.restore();
-        });
-      };
-
-      // Λειτουργία Animation Loop
-      function loop() {
-        ctx.globalAlpha = 0.17;
-        ctx.fillStyle = '#fff0fa'; // ελαφρύ ροζ φόντο για fade
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.globalAlpha = 1;
-
-        // Νέα πυροτεχνήματα κατά βούληση
-        if (Math.random() < 0.12) {
-          fireworks.push(new Firework());
-        }
-        // Update, draw, and remove any finished fireworks
-        fireworks = fireworks.filter(f => {
-          f.draw(ctx);
-          return f.update();
-        });
-
-        requestAnimationFrame(loop);
-      }
-      loop();
-
-      function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-      }
-    }
-  </script>
+    </script>
 </body>
 </html>
