@@ -1,414 +1,522 @@
 <!DOCTYPE html>
 <html lang="el">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Παρακολούθηση Βάρους - Δίδυμη Κύηση</title>
-    
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-        }
-        .container {
-            width: 100%;
-            max-width: 900px;
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            padding: 25px;
-            box-sizing: border-box;
-        }
-        h1, h2, h3 {
-            text-align: center;
-            color: #2c3e50;
-            padding-bottom: 10px;
-        }
-        h1, h2 {
-            border-bottom: 2px solid #3498db;
-        }
-        #chart-wrapper {
-            position: relative;
-            height: 450px;
-        }
-        canvas {
-            width: 100% !important;
-            height: 100% !important;
-        }
-        .info-box {
-            text-align: center;
-            background-color: #ecf0f1;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-        }
-        #currentStatus {
-            font-size: 1.1em;
-            font-weight: bold;
-            color: #2980b9;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Παιδιατρικό Ημερολόγιο — Χριστίνα &amp; Γεωργία</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        /* ΝΕΑ ΣΤΥΛ ΓΙΑ ΤΗ ΦΟΡΜΑ */
-        .form-container {
-            margin-top: 25px;
-            padding: 20px;
-            background-color: #f9f9f9;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-        }
-        #addWeightForm {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            align-items: flex-end;
-            gap: 15px;
-        }
-        #addWeightForm > div {
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-        #addWeightForm label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            font-size: 0.9em;
-            color: #555;
-        }
-        #addWeightForm input {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1em;
-        }
-        #addWeightForm button {
-            padding: 10px 20px;
-            background-color: #27ae60;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            flex-shrink: 0;
-            height: 42px; /* Στοίχιση με τα input */
-        }
-        #addWeightForm button:hover {
-            background-color: #219d55;
-        }
-        #clearDataButton {
-            display: block;
-            margin: 15px auto 0;
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 8px 15px;
-            font-size: 0.9em;
-            cursor: pointer;
-        }
-        #clearDataButton:hover {
-            background-color: #c0392b;
-        }
-        .disclaimer {
-            font-size: 0.9em;
-            color: #7f8c8d;
-            text-align: center;
-            margin-top: 20px;
-            font-style: italic;
-        }
-    </style>
+  :root {
+    --bg: #ffffff;
+    --bg2: #f7f7f5;
+    --bg3: #f0f0ee;
+    --text: #1a1a1a;
+    --text2: #6b6b68;
+    --text3: #9a9a97;
+    --border: rgba(0,0,0,0.12);
+    --border2: rgba(0,0,0,0.22);
+    --radius: 10px;
+    --radius-sm: 7px;
+    --blue: #185FA5;
+    --blue-light: #E6F1FB;
+    --blue-mid: #378ADD;
+    --teal: #0F6E56;
+    --teal-light: #E1F5EE;
+    --teal-mid: #1D9E75;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1b;
+      --bg2: #252524;
+      --bg3: #2e2e2c;
+      --text: #f0f0ee;
+      --text2: #a8a8a5;
+      --text3: #6b6b68;
+      --border: rgba(255,255,255,0.12);
+      --border2: rgba(255,255,255,0.22);
+      --blue-light: #0c3254;
+      --teal-light: #083e30;
+    }
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg3);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  header { margin-bottom: 1.5rem; }
+  header h1 { font-size: 22px; font-weight: 600; color: var(--text); }
+  header p { font-size: 13px; color: var(--text2); margin-top: 3px; }
+
+  .card {
+    background: var(--bg);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text2);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12px; color: var(--text2); }
+  .field input {
+    padding: 9px 11px;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    background: var(--bg2);
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus { border-color: var(--blue-mid); }
+
+  .btn-primary {
+    width: 100%;
+    padding: 11px;
+    background: var(--text);
+    color: var(--bg);
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 12px;
+    transition: opacity 0.15s;
+  }
+  .btn-primary:hover { opacity: 0.82; }
+
+  .btn-ghost {
+    padding: 6px 12px;
+    background: transparent;
+    border: 0.5px solid var(--border2);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: #c0392b;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-ghost:hover { background: var(--bg2); }
+
+  .msg { font-size: 12px; color: var(--text2); margin-top: 8px; min-height: 18px; }
+
+  /* Metric blocks */
+  .name-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  .tag-c { background: #B5D4F4; color: #0C447C; }
+  .tag-g { background: #9FE1CB; color: #085041; }
+
+  .metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; margin-bottom: 14px; }
+  .metric { background: var(--bg2); border-radius: var(--radius-sm); padding: 11px 12px; }
+  .metric .mlabel { font-size: 11px; color: var(--text2); margin-bottom: 3px; }
+  .metric .mval { font-size: 18px; font-weight: 500; color: var(--text); }
+  .metric .msub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+  /* Tabs */
+  .tabs { display: flex; border-bottom: 0.5px solid var(--border); margin-bottom: 1rem; }
+  .tab {
+    padding: 8px 14px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--text2);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -0.5px;
+    font-family: inherit;
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    transition: color 0.15s;
+  }
+  .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+
+  .chart-section { display: none; }
+  .chart-section.active { display: block; }
+
+  .chart-wrap { position: relative; width: 100%; height: 270px; }
+  .chart-wrap-sm { position: relative; width: 100%; height: 230px; }
+  .zoom-hint { font-size: 11px; color: var(--text3); margin-top: 5px; }
+
+  /* Legend */
+  .legend { display: flex; gap: 16px; font-size: 11px; color: var(--text2); margin-bottom: 10px; flex-wrap: wrap; }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+  /* History */
+  .history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .visit-row {
+    padding: 10px 0;
+    border-bottom: 0.5px solid var(--border);
+    font-size: 13px;
+  }
+  .visit-row:last-child { border-bottom: none; }
+  .vr-top { display: flex; align-items: center; gap: 8px; }
+  .vr-date { color: var(--text2); min-width: 90px; font-size: 12px; }
+  .vr-kg { font-weight: 500; min-width: 72px; }
+  .vr-del {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--text3);
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0 4px;
+  }
+  .vr-del:hover { color: #c0392b; }
+  .vr-gain { font-size: 11px; color: var(--text2); margin-top: 4px; padding-left: 0; }
+
+  .empty { font-size: 13px; color: var(--text3); text-align: center; padding: 1.5rem 0; }
+
+  #results { display: none; }
+
+  @media (max-width: 500px) {
+    .grid2, .grid3, .metrics { grid-template-columns: 1fr 1fr; }
+    .metrics { grid-template-columns: 1fr 1fr; }
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Διάγραμμα Αύξησης Βάρους</h1>
-        <h2>Δίδυμη Κύηση</h2>
-        
-        <div id="chart-wrapper">
-            <canvas id="weightChart"></canvas>
-        </div>
-        
-        <div class="info-box">
-            <strong>Τελευταία Μέτρηση:</strong>
-            <p id="currentStatus">Δεν υπάρχουν δεδομένα</p>
-        </div>
+<div class="container">
+  <header>
+    <h1>Παιδιατρικό ημερολόγιο</h1>
+    <p>Χριστίνα &amp; Γεωργία — παρακολούθηση βάρους &amp; γάλακτος</p>
+  </header>
 
-        <div class="form-container">
-            <h3>Προσθήκη Νέας Μέτρησης</h3>
-            <form id="addWeightForm">
-                <div>
-                    <label for="inputDate">Ημερομηνία</label>
-                    <input type="date" id="inputDate" name="date" required>
-                </div>
-                <div>
-                    <label for="inputWeight">Βάρος (π.χ. 63.5)</label>
-                    <input type="number" id="inputWeight" name="weight" step="0.1" min="0" required>
-                </div>
-                <button type="submit">Προσθήκη</button>
-            </form>
-            <button id="clearDataButton" title="Διαγράφει όλες τις μετρήσεις που προσθέσατε από τη φόρμα (δεν σβήνει την αρχική μέτρηση του κώδικα)">Εκκαθάριση Αποθηκευμένων Μετρήσεων</button>
-        </div>
-        
-        <p class="disclaimer">
-            <strong>Σημαντική Σημείωση:</strong> Αυτό το διάγραμμα βασίζεται σε γενικές κατευθυντήριες γραμμές
-            (IOM) για δίδυμες κυήσεις με φυσιολογικό αρχικό ΔΜΣ (17-25kg συνολική αύξηση).
-            Δεν αντικαθιστά σε καμία περίπτωση τις συμβουλές του γυναικολόγου σας.
-            Οι μετρήσεις που προσθέτετε αποθηκεύονται τοπικά στον browser σας.
-        </p>
+  <!-- Input card -->
+  <div class="card">
+    <div class="section-label">Νέα επίσκεψη</div>
+    <div class="field" style="margin-bottom:12px">
+      <label>Ημερομηνία επίσκεψης</label>
+      <input type="date" id="visitDate">
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label>Βάρος Χριστίνας (kg)</label>
+        <input type="number" id="weightC" step="0.001" placeholder="π.χ. 4.250">
+      </div>
+      <div class="field">
+        <label>Βάρος Γεωργίας (kg)</label>
+        <input type="number" id="weightG" step="0.001" placeholder="π.χ. 3.900">
+      </div>
+    </div>
+    <button class="btn-primary" onclick="addVisit()">Προσθήκη επίσκεψης</button>
+    <div id="addMsg" class="msg"></div>
+  </div>
+
+  <div id="results">
+    <!-- Last visit results -->
+    <div class="card" id="lastCard">
+      <div class="section-label">Τελευταία επίσκεψη — αποτελέσματα</div>
+      <div id="lastResult"></div>
     </div>
 
-    <script>
-        // ==================================================================
-        // === ΡΥΘΜΙΣΕΙΣ (ΕΔΩ ΑΛΛΑΖΕΤΕ ΤΙΣ ΤΙΜΕΣ) ===
-        // ==================================================================
-        
-        const lmpDateString = "2025-07-03";
-        const startWeight = 57;
-        
-        // Αυτή είναι η "αρχική" λίστα.
-        // Μπορείτε να την αφήσετε και κενή: const initialDataPoints = [];
-        const initialDataPoints = [
-            { date: "2025-10-26", weight: 62.7 },
-        ];
+    <!-- Charts -->
+    <div class="card">
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('weight')">Βάρος</button>
+        <button class="tab" onclick="showTab('daily')">Ανά ημέρα</button>
+        <button class="tab" onclick="showTab('milk')">Γάλα</button>
+      </div>
 
-        // ==================================================================
-        // === ΝΕΑ ΛΟΓΙΚΗ (LocalStorage & Φόρμα) ===
-        // ==================================================================
+      <div id="tab-weight" class="chart-section active">
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#B5D4F4;border:1px solid #378ADD"></span>Χριστίνα</span>
+          <span><span class="legend-dot" style="background:#9FE1CB;border:1px solid #1D9E75"></span>Γεωργία</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chartWeight" role="img" aria-label="Εξέλιξη βάρους Χριστίνας και Γεωργίας ανά επίσκεψη">Εξέλιξη βάρους σε kg ανά επίσκεψη.</canvas>
+        </div>
+        <p class="zoom-hint">Scroll ή pinch για zoom · σύρτε για μετακίνηση</p>
+      </div>
 
-        // Το "κλειδί" για την τοπική αποθήκευση
-        const STORAGE_KEY = 'twinWeightTrackerData';
+      <div id="tab-daily" class="chart-section">
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#B5D4F4;border:1px solid #378ADD"></span>Χριστίνα</span>
+          <span><span class="legend-dot" style="background:#9FE1CB;border:1px solid #1D9E75"></span>Γεωργία</span>
+        </div>
+        <div class="chart-wrap-sm">
+          <canvas id="chartDaily" role="img" aria-label="Αύξηση βάρους σε γραμμάρια ανά ημέρα">Αύξηση g/ημέρα μεταξύ επισκέψεων.</canvas>
+        </div>
+        <p class="zoom-hint">Scroll ή pinch για zoom</p>
+      </div>
 
-        // Μεταβλητή για να κρατάμε το chart και να το κάνουμε update
-        let weightChartInstance = null;
+      <div id="tab-milk" class="chart-section">
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#B5D4F4;border:1px solid #378ADD"></span>Χριστίνα (εύρος)</span>
+          <span><span class="legend-dot" style="background:#9FE1CB;border:1px solid #1D9E75"></span>Γεωργία (εύρος)</span>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chartMilk" role="img" aria-label="Εύρος γάλακτος σε ml ανά γεύμα για κάθε επίσκεψη">Εύρος ml γάλακτος ανά γεύμα.</canvas>
+        </div>
+        <p class="zoom-hint">Scroll ή pinch για zoom</p>
+      </div>
+    </div>
 
-        /**
-         * Φορτώνει τα δεδομένα (αρχικά + αποθηκευμένα)
-         */
-        function loadAllData() {
-            const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-            // Συνδυάζει τα αρχικά δεδομένα του κώδικα με αυτά από τη μνήμη
-            const allData = [...initialDataPoints, ...savedData];
-            
-            // Ταξινόμηση κατά ημερομηνία
-            return allData.sort((a, b) => new Date(a.date) - new Date(b.date));
-        }
+    <!-- History -->
+    <div class="card">
+      <div class="history-header">
+        <div class="section-label" style="margin-bottom:0">Ιστορικό επισκέψεων</div>
+        <button class="btn-ghost" onclick="clearAll()">Διαγραφή όλων</button>
+      </div>
+      <div id="visitsList"></div>
+    </div>
+  </div>
+</div>
 
-        /**
-         * Αποθηκεύει ένα *νέο* σημείο δεδομένων
-         */
-        function saveDataPoint(dataPoint) {
-            const savedData = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-            savedData.push(dataPoint);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(savedData));
-        }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.2.1/chartjs-plugin-zoom.min.js"></script>
+<script>
+const STORAGE_KEY = 'didymes-paediatro-v1';
+let visits = [];
+let chartW = null, chartD = null, chartM = null;
 
-        /**
-         * Καθαρίζει τα *αποθηκευμένα* δεδομένα (όχι τα αρχικά)
-         */
-        function clearSavedData() {
-            if (confirm("Είστε σίγουρος/η ότι θέλετε να διαγράψετε όλες τις αποθηκευμένες μετρήσεις; \n(Η αρχική μέτρηση των 62.7kg θα παραμείνει).")) {
-                localStorage.removeItem(STORAGE_KEY);
-                renderChart(); // Ξανα-σχεδίασε το chart μόνο με τα αρχικά δεδομένα
-            }
-        }
+function load() {
+  try { const r = localStorage.getItem(STORAGE_KEY); if (r) visits = JSON.parse(r); } catch(e) { visits = []; }
+}
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(visits)); } catch(e) {}
+}
+function fmtDate(d) {
+  const [y,m,day] = d.split('-'); return `${day}/${m}/${y}`;
+}
+function daysBetween(d1, d2) {
+  return Math.round((new Date(d2) - new Date(d1)) / 86400000);
+}
+function milkRange(kg) {
+  return { mn: Math.round((kg * 1.6 / 8) * 10) / 10, mx: Math.round((kg * 1.8 / 8) * 10) / 10 };
+}
 
-        /**
-         * Η ΚΥΡΙΑ ΣΥΝΑΡΤΗΣΗ ΠΟΥ ΣΧΕΔΙΑΖΕΙ ΤΟ CHART
-         */
-        function renderChart() {
-            const lmpDate = new Date(lmpDateString);
-            if (isNaN(lmpDate)) {
-                console.error("Η ημερομηνία ΤΕΡ δεν είναι έγκυρη.");
-                return;
-            }
+function addVisit() {
+  const date = document.getElementById('visitDate').value;
+  const wc = parseFloat(document.getElementById('weightC').value);
+  const wg = parseFloat(document.getElementById('weightG').value);
+  const msg = document.getElementById('addMsg');
+  if (!date) { msg.textContent = 'Παρακαλώ συμπλήρωσε ημερομηνία.'; return; }
+  if (isNaN(wc) || wc <= 0) { msg.textContent = 'Παρακαλώ συμπλήρωσε βάρος Χριστίνας.'; return; }
+  if (isNaN(wg) || wg <= 0) { msg.textContent = 'Παρακαλώ συμπλήρωσε βάρος Γεωργίας.'; return; }
+  if (visits.find(v => v.date === date)) { msg.textContent = 'Υπάρχει ήδη επίσκεψη αυτή την ημερομηνία.'; return; }
+  visits.push({ date, wc, wg });
+  visits.sort((a,b) => a.date.localeCompare(b.date));
+  save();
+  msg.textContent = 'Η επίσκεψη αποθηκεύτηκε!';
+  setTimeout(() => msg.textContent = '', 2500);
+  document.getElementById('weightC').value = '';
+  document.getElementById('weightG').value = '';
+  render();
+}
 
-            // Υπολογισμός μοντέλου βάρους (όπως και πριν)
-            const minGainT1 = 2;
-            const maxGainT1 = 4;
-            const minGainPerWeekT23 = (17 - minGainT1) / (40 - 14);
-            const maxGainPerWeekT23 = (25 - maxGainT1) / (40 - 14);
-            
-            const labels = [];
-            const minWeightData = [];
-            const maxWeightData = [];
-            
-            for (let week = 0; week <= 40; week++) {
-                labels.push(`Εβδ. ${week}`);
-                let minGain, maxGain;
-                if (week === 0) { minGain = 0; maxGain = 0; }
-                else if (week <= 14) {
-                    minGain = (minGainT1 / 14) * week;
-                    maxGain = (maxGainT1 / 14) * week;
-                } else {
-                    let weeksIntoT23 = week - 14;
-                    minGain = minGainT1 + (minGainPerWeekT23 * weeksIntoT23);
-                    maxGain = maxGainT1 + (maxGainPerWeekT23 * weeksIntoT23);
-                }
-                minWeightData.push(parseFloat((startWeight + minGain).toFixed(1)));
-                maxWeightData.push(parseFloat((startWeight + maxGain).toFixed(1)));
-            }
+function deleteVisit(i) {
+  if (!confirm('Να διαγραφεί αυτή η επίσκεψη;')) return;
+  visits.splice(i, 1);
+  save();
+  render();
+}
 
-            // Επεξεργασία των πραγματικών μετρήσεων (από τη νέα συνάρτηση)
-            const actualWeightDataPoints = loadAllData();
-            const actualData = new Array(41).fill(null); // 0-40 εβδομάδες
+function clearAll() {
+  if (!confirm('Να διαγραφούν όλες οι επισκέψεις;')) return;
+  visits = [];
+  save();
+  render();
+}
 
-            if (actualWeightDataPoints.length > 0) {
-                actualWeightDataPoints.forEach(point => {
-                    const pointDate = new Date(point.date);
-                    if (!isNaN(pointDate) && point.weight > 0) {
-                        const diffTime = pointDate.getTime() - lmpDate.getTime();
-                        const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
-                        
-                        if (diffWeeks >= 0 && diffWeeks <= 40) {
-                            actualData[diffWeeks] = point.weight;
-                        }
-                    }
-                });
+function showTab(name) {
+  const names = ['weight','daily','milk'];
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', names[i] === name));
+  document.querySelectorAll('.chart-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+}
 
-                // Εμφάνιση της *τελευταίας* μέτρησης
-                const latestData = actualWeightDataPoints[actualWeightDataPoints.length - 1];
-                const latestDate = new Date(latestData.date);
-                const diffTime = latestDate.getTime() - lmpDate.getTime();
-                const latestWeek = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
-                document.getElementById('currentStatus').innerText = 
-                    `Εβδομάδα ${latestWeek} (${latestData.date}) | Βάρος: ${latestData.weight} kg`;
-            } else {
-                 document.getElementById('currentStatus').innerText = "Δεν υπάρχουν δεδομένα";
-            }
+const zoomOpts = {
+  zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+  pan: { enabled: true, mode: 'x' }
+};
 
-            // Σχεδίαση του διαγράμματος
-            const ctx = document.getElementById('weightChart').getContext('2d');
-            
-            // **Σημαντικό:** Καταστρέφουμε το παλιό chart πριν σχεδιάσουμε το νέο
-            if (weightChartInstance) {
-                weightChartInstance.destroy();
-            }
+function render() {
+  const resDiv = document.getElementById('results');
+  if (visits.length === 0) { resDiv.style.display = 'none'; return; }
+  resDiv.style.display = 'block';
 
-            weightChartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        {
-                            label: 'Ελάχιστο Συνιστώμενο Βάρος',
-                            data: minWeightData,
-                            borderColor: 'rgba(54, 162, 235, 0.5)',
-                            borderWidth: 2,
-                            pointRadius: 0,
-                            fill: false,
-                            tension: 0.1
-                        },
-                        {
-                            label: 'Μέγιστο Συνιστώμενο Βάρος',
-                            data: maxWeightData,
-                            borderColor: 'rgba(54, 162, 235, 0.5)',
-                            borderWidth: 2,
-                            backgroundColor: 'rgba(54, 162, 235, 0.1)',
-                            pointRadius: 0,
-                            fill: '-1',
-                            tension: 0.1
-                        },
-                        {
-                            label: 'Το Βάρος σας',
-                            data: actualData,
-                            borderColor: 'rgb(255, 99, 132)',
-                            backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                            borderWidth: 3,
-                            pointRadius: 5,
-                            pointHoverRadius: 8,
-                            pointBackgroundColor: 'rgb(255, 99, 132)',
-                            showLine: true,
-                            spanGaps: true,
-                            tension: 0.1
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        title: {
-                            display: true,
-                            text: 'Εβδομαδιαία Πορεία Βάρους (kg) σε Δίδυμη Κύηση',
-                            font: { size: 16 }
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) { label += ': '; }
-                                    if (context.parsed.y !== null) {
-                                        label += context.parsed.y + ' kg';
-                                    }
-                                    return label;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            title: { display: true, text: 'Εβδομάδα Κύησης' },
-                            ticks: { autoSkip: true, maxTicksLimit: 21 }
-                        },
-                        y: {
-                            title: { display: true, text: 'Βάρος (kg)' },
-                            suggestedMin: startWeight - 3,
-                            suggestedMax: startWeight + 28
-                        }
-                    },
-                    hover: {
-                        mode: 'index',
-                        intersect: false
-                    }
-                }
-            });
-        }
-        
-        // ==================================================================
-        // === Event Listeners (ΕΚΚΙΝΗΣΗ) ===
-        // ==================================================================
+  // Last visit results
+  const last = visits[visits.length - 1];
+  const prev = visits.length > 1 ? visits[visits.length - 2] : null;
 
-        // 1. Όταν φορτώσει η σελίδα, σχεδίασε το chart
-        document.addEventListener('DOMContentLoaded', renderChart);
+  let html = '';
+  ['C','G'].forEach(x => {
+    const name = x === 'C' ? 'Χριστίνα' : 'Γεωργία';
+    const cls = x === 'C' ? 'tag-c' : 'tag-g';
+    const wLast = x === 'C' ? last.wc : last.wg;
+    const milk = milkRange(wLast);
+    html += `<span class="name-tag ${cls}">${name}</span>`;
+    html += `<div class="metrics">`;
+    html += `<div class="metric"><div class="mlabel">Βάρος</div><div class="mval">${wLast.toFixed(3)} kg</div></div>`;
+    if (prev) {
+      const wPrev = x === 'C' ? prev.wc : prev.wg;
+      const days = daysBetween(prev.date, last.date);
+      const gain = Math.round((wLast - wPrev) * 1000);
+      const perDay = days > 0 ? Math.round(gain / days) : 0;
+      html += `<div class="metric"><div class="mlabel">Αύξηση (${days} ημ.)</div><div class="mval">${gain >= 0 ? '+' : ''}${gain} g</div></div>`;
+      html += `<div class="metric"><div class="mlabel">Ανά ημέρα</div><div class="mval">${perDay >= 0 ? '+' : ''}${perDay} g</div></div>`;
+    } else {
+      html += `<div class="metric"><div class="mlabel">Αύξηση</div><div class="mval">—</div><div class="msub">Πρώτη επίσκεψη</div></div>`;
+      html += `<div class="metric"><div class="mlabel">Ανά ημέρα</div><div class="mval">—</div></div>`;
+    }
+    html += `</div>`;
+    html += `<div class="metric" style="margin-bottom:${x==='C'?'16':'0'}px"><div class="mlabel">Γάλα ανά γεύμα (×8/ημέρα)</div><div class="mval" style="font-size:16px">${milk.mn}–${milk.mx} ml</div></div>`;
+    if (x === 'C') html += '<hr style="border:none;border-top:0.5px solid var(--border);margin:12px 0">';
+  });
+  document.getElementById('lastResult').innerHTML = html;
 
-        // 2. Όταν η φόρμα υποβληθεί
-        document.getElementById('addWeightForm').addEventListener('submit', function(e) {
-            e.preventDefault(); // Σταμάτα την ανανέωση της σελίδας
-            
-            const dateValue = document.getElementById('inputDate').value;
-            const weightValue = document.getElementById('inputWeight').value;
+  const labels = visits.map(v => fmtDate(v.date));
+  const wcArr = visits.map(v => v.wc);
+  const wgArr = visits.map(v => v.wg);
 
-            if (dateValue && weightValue) {
-                const newDataPoint = {
-                    date: dateValue,
-                    weight: parseFloat(weightValue)
-                };
-                
-                // Αποθήκευσε το νέο σημείο
-                saveDataPoint(newDataPoint);
-                
-                // Ξανα-σχεδίασε το chart με τα νέα δεδομένα
-                renderChart();
-                
-                // Καθάρισε τη φόρμα
-                e.target.reset();
-            }
-        });
-        
-        // 3. Όταν πατηθεί το κουμπί εκκαθάρισης
-        document.getElementById('clearDataButton').addEventListener('click', clearSavedData);
+  const dailyLabels = labels.slice(1);
+  const dailyC = visits.slice(1).map((v,i) => {
+    const days = daysBetween(visits[i].date, v.date);
+    return days > 0 ? Math.round((v.wc - visits[i].wc) * 1000 / days) : null;
+  });
+  const dailyG = visits.slice(1).map((v,i) => {
+    const days = daysBetween(visits[i].date, v.date);
+    return days > 0 ? Math.round((v.wg - visits[i].wg) * 1000 / days) : null;
+  });
 
-    </script>
+  const milkCMin = visits.map(v => milkRange(v.wc).mn);
+  const milkCMax = visits.map(v => milkRange(v.wc).mx);
+  const milkGMin = visits.map(v => milkRange(v.wg).mn);
+  const milkGMax = visits.map(v => milkRange(v.wg).mx);
+
+  const baseOpts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, zoom: zoomOpts },
+    scales: {
+      x: { ticks: { font: { size: 11 }, maxRotation: 45, autoSkip: false } },
+      y: { ticks: { font: { size: 11 } } }
+    }
+  };
+
+  if (chartW) chartW.destroy();
+  chartW = new Chart(document.getElementById('chartWeight'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Χριστίνα', data: wcArr, borderColor: '#378ADD', backgroundColor: 'rgba(55,138,221,0.08)', pointBackgroundColor: '#378ADD', tension: 0.35, fill: false },
+        { label: 'Γεωργία',  data: wgArr, borderColor: '#1D9E75', backgroundColor: 'rgba(29,158,117,0.08)', pointBackgroundColor: '#1D9E75', tension: 0.35, fill: false, borderDash: [5,3] }
+      ]
+    },
+    options: { ...baseOpts, plugins: { ...baseOpts.plugins,
+      tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y.toFixed(3)} kg` } }
+    }, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, title: { display: true, text: 'kg', font: { size: 11 } } } } }
+  });
+
+  if (chartD) chartD.destroy();
+  chartD = new Chart(document.getElementById('chartDaily'), {
+    type: 'bar',
+    data: {
+      labels: dailyLabels,
+      datasets: [
+        { label: 'Χριστίνα', data: dailyC, backgroundColor: '#B5D4F4', borderColor: '#378ADD', borderWidth: 1 },
+        { label: 'Γεωργία',  data: dailyG, backgroundColor: '#9FE1CB', borderColor: '#1D9E75', borderWidth: 1 }
+      ]
+    },
+    options: { ...baseOpts, plugins: { ...baseOpts.plugins,
+      tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y} g/ημέρα` } }
+    }, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, title: { display: true, text: 'g/ημέρα', font: { size: 11 } } } } }
+  });
+
+  if (chartM) chartM.destroy();
+  chartM = new Chart(document.getElementById('chartMilk'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Χρ. min', data: milkCMin, borderColor: '#378ADD', fill: false, borderDash: [4,3], tension: 0.3, pointBackgroundColor: '#378ADD', pointRadius: 3 },
+        { label: 'Χρ. max', data: milkCMax, borderColor: '#378ADD', backgroundColor: 'rgba(55,138,221,0.10)', fill: '-1', tension: 0.3, pointBackgroundColor: '#378ADD', pointRadius: 3 },
+        { label: 'Γεω. min', data: milkGMin, borderColor: '#1D9E75', fill: false, borderDash: [4,3], tension: 0.3, pointBackgroundColor: '#1D9E75', pointRadius: 3 },
+        { label: 'Γεω. max', data: milkGMax, borderColor: '#1D9E75', backgroundColor: 'rgba(29,158,117,0.10)', fill: '-1', tension: 0.3, pointBackgroundColor: '#1D9E75', pointRadius: 3 }
+      ]
+    },
+    options: { ...baseOpts, plugins: { ...baseOpts.plugins,
+      tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y.toFixed(1)} ml` } }
+    }, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, title: { display: true, text: 'ml / γεύμα', font: { size: 11 } } } } }
+  });
+
+  // History list
+  const listDiv = document.getElementById('visitsList');
+  listDiv.innerHTML = '';
+  if (visits.length === 0) {
+    listDiv.innerHTML = '<div class="empty">Δεν υπάρχουν επισκέψεις ακόμα.</div>';
+    return;
+  }
+  [...visits].reverse().forEach((v, ri) => {
+    const i = visits.length - 1 - ri;
+    const p = i > 0 ? visits[i-1] : null;
+    const days = p ? daysBetween(p.date, v.date) : null;
+    const gainC = p ? Math.round((v.wc - p.wc) * 1000) : null;
+    const gainG = p ? Math.round((v.wg - p.wg) * 1000) : null;
+
+    const row = document.createElement('div');
+    row.className = 'visit-row';
+    let inner = `<div class="vr-top">
+      <span class="vr-date">${fmtDate(v.date)}</span>
+      <span class="vr-kg" style="color:var(--blue)">${v.wc.toFixed(3)} kg</span>
+      <span class="vr-kg" style="color:var(--teal)">${v.wg.toFixed(3)} kg</span>
+      <button class="vr-del" onclick="deleteVisit(${i})" title="Διαγραφή">×</button>
+    </div>`;
+    if (p) {
+      inner += `<div class="vr-gain">
+        Αύξηση (${days} ημ.):
+        <span style="color:var(--blue)">${gainC >= 0 ? '+' : ''}${gainC}g · ${Math.round(gainC/days)}g/ημ.</span>
+        &nbsp;·&nbsp;
+        <span style="color:var(--teal)">${gainG >= 0 ? '+' : ''}${gainG}g · ${Math.round(gainG/days)}g/ημ.</span>
+      </div>`;
+    }
+    row.innerHTML = inner;
+    listDiv.appendChild(row);
+  });
+}
+
+// Init
+document.getElementById('visitDate').valueAsDate = new Date();
+load();
+render();
+</script>
 </body>
 </html>
