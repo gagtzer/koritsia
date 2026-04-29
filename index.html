@@ -1,522 +1,240 @@
 <!DOCTYPE html>
 <html lang="el">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Παιδιατρικό Ημερολόγιο — Χριστίνα &amp; Γεωργία</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #ffffff;
-    --bg2: #f7f7f5;
-    --bg3: #f0f0ee;
-    --text: #1a1a1a;
-    --text2: #6b6b68;
-    --text3: #9a9a97;
-    --border: rgba(0,0,0,0.12);
-    --border2: rgba(0,0,0,0.22);
-    --radius: 10px;
-    --radius-sm: 7px;
-    --blue: #185FA5;
-    --blue-light: #E6F1FB;
-    --blue-mid: #378ADD;
-    --teal: #0F6E56;
-    --teal-light: #E1F5EE;
-    --teal-mid: #1D9E75;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1c1c1b;
-      --bg2: #252524;
-      --bg3: #2e2e2c;
-      --text: #f0f0ee;
-      --text2: #a8a8a5;
-      --text3: #6b6b68;
-      --border: rgba(255,255,255,0.12);
-      --border2: rgba(255,255,255,0.22);
-      --blue-light: #0c3254;
-      --teal-light: #083e30;
-    }
-  }
-
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-    background: var(--bg3);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 1.5rem 1rem 3rem;
-  }
-
-  .container {
-    max-width: 720px;
-    margin: 0 auto;
-  }
-
-  header { margin-bottom: 1.5rem; }
-  header h1 { font-size: 22px; font-weight: 600; color: var(--text); }
-  header p { font-size: 13px; color: var(--text2); margin-top: 3px; }
-
-  .card {
-    background: var(--bg);
-    border: 0.5px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-  }
-
-  .section-label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text2);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    margin-bottom: 1rem;
-  }
-
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-
-  .field { display: flex; flex-direction: column; gap: 5px; }
-  .field label { font-size: 12px; color: var(--text2); }
-  .field input {
-    padding: 9px 11px;
-    border: 0.5px solid var(--border2);
-    border-radius: var(--radius-sm);
-    background: var(--bg2);
-    color: var(--text);
-    font-size: 14px;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.15s;
-  }
-  .field input:focus { border-color: var(--blue-mid); }
-
-  .btn-primary {
-    width: 100%;
-    padding: 11px;
-    background: var(--text);
-    color: var(--bg);
-    border: none;
-    border-radius: var(--radius-sm);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: inherit;
-    margin-top: 12px;
-    transition: opacity 0.15s;
-  }
-  .btn-primary:hover { opacity: 0.82; }
-
-  .btn-ghost {
-    padding: 6px 12px;
-    background: transparent;
-    border: 0.5px solid var(--border2);
-    border-radius: var(--radius-sm);
-    font-size: 12px;
-    color: #c0392b;
-    cursor: pointer;
-    font-family: inherit;
-  }
-  .btn-ghost:hover { background: var(--bg2); }
-
-  .msg { font-size: 12px; color: var(--text2); margin-top: 8px; min-height: 18px; }
-
-  /* Metric blocks */
-  .name-tag {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 2px 8px;
-    border-radius: 4px;
-    margin-bottom: 8px;
-  }
-  .tag-c { background: #B5D4F4; color: #0C447C; }
-  .tag-g { background: #9FE1CB; color: #085041; }
-
-  .metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; margin-bottom: 14px; }
-  .metric { background: var(--bg2); border-radius: var(--radius-sm); padding: 11px 12px; }
-  .metric .mlabel { font-size: 11px; color: var(--text2); margin-bottom: 3px; }
-  .metric .mval { font-size: 18px; font-weight: 500; color: var(--text); }
-  .metric .msub { font-size: 11px; color: var(--text3); margin-top: 1px; }
-
-  /* Tabs */
-  .tabs { display: flex; border-bottom: 0.5px solid var(--border); margin-bottom: 1rem; }
-  .tab {
-    padding: 8px 14px;
-    font-size: 13px;
-    cursor: pointer;
-    color: var(--text2);
-    border-bottom: 2px solid transparent;
-    margin-bottom: -0.5px;
-    font-family: inherit;
-    background: none;
-    border-left: none;
-    border-right: none;
-    border-top: none;
-    transition: color 0.15s;
-  }
-  .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
-
-  .chart-section { display: none; }
-  .chart-section.active { display: block; }
-
-  .chart-wrap { position: relative; width: 100%; height: 270px; }
-  .chart-wrap-sm { position: relative; width: 100%; height: 230px; }
-  .zoom-hint { font-size: 11px; color: var(--text3); margin-top: 5px; }
-
-  /* Legend */
-  .legend { display: flex; gap: 16px; font-size: 11px; color: var(--text2); margin-bottom: 10px; flex-wrap: wrap; }
-  .legend span { display: flex; align-items: center; gap: 5px; }
-  .legend-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
-
-  /* History */
-  .history-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
-  }
-
-  .visit-row {
-    padding: 10px 0;
-    border-bottom: 0.5px solid var(--border);
-    font-size: 13px;
-  }
-  .visit-row:last-child { border-bottom: none; }
-  .vr-top { display: flex; align-items: center; gap: 8px; }
-  .vr-date { color: var(--text2); min-width: 90px; font-size: 12px; }
-  .vr-kg { font-weight: 500; min-width: 72px; }
-  .vr-del {
-    margin-left: auto;
-    background: none;
-    border: none;
-    color: var(--text3);
-    cursor: pointer;
-    font-size: 18px;
-    line-height: 1;
-    padding: 0 4px;
-  }
-  .vr-del:hover { color: #c0392b; }
-  .vr-gain { font-size: 11px; color: var(--text2); margin-top: 4px; padding-left: 0; }
-
-  .empty { font-size: 13px; color: var(--text3); text-align: center; padding: 1.5rem 0; }
-
-  #results { display: none; }
-
-  @media (max-width: 500px) {
-    .grid2, .grid3, .metrics { grid-template-columns: 1fr 1fr; }
-    .metrics { grid-template-columns: 1fr 1fr; }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Παρακολούθηση Χριστίνας & Γεωργίας</title>
+    <!-- Χρήση Pico CSS για όμορφο και καθαρό σχεδιασμό αυτόματα -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <!-- Εισαγωγή Chart.js και Zoom Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <style>
+        .chart-container { position: relative; height: 400px; width: 100%; margin-bottom: 3rem; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        th, td { text-align: center; font-size: 0.9rem; }
+        .table-wrapper { overflow-x: auto; margin-bottom: 2rem; }
+    </style>
 </head>
 <body>
-<div class="container">
-  <header>
-    <h1>Παιδιατρικό ημερολόγιο</h1>
-    <p>Χριστίνα &amp; Γεωργία — παρακολούθηση βάρους &amp; γάλακτος</p>
-  </header>
+    <main class="container">
+        <h2>Ανάπτυξη Διδύμων: Χριστίνα & Γεωργία</h2>
+        
+        <!-- Φόρμα Εισαγωγής -->
+        <article>
+            <form id="dataForm">
+                <div class="grid">
+                    <label>
+                        Ημερομηνία Επίσκεψης
+                        <input type="date" id="visitDate" required>
+                    </label>
+                </div>
+                <div class="grid-2">
+                    <label>
+                        Βάρος Χριστίνας (kg)
+                        <input type="number" step="0.01" id="cWeight" placeholder="π.χ. 4.5" required>
+                    </label>
+                    <label>
+                        Βάρος Γεωργίας (kg)
+                        <input type="number" step="0.01" id="gWeight" placeholder="π.χ. 4.3" required>
+                    </label>
+                </div>
+                <button type="submit">Προσθήκη Επίσκεψης</button>
+            </form>
+        </article>
 
-  <!-- Input card -->
-  <div class="card">
-    <div class="section-label">Νέα επίσκεψη</div>
-    <div class="field" style="margin-bottom:12px">
-      <label>Ημερομηνία επίσκεψης</label>
-      <input type="date" id="visitDate">
-    </div>
-    <div class="grid2">
-      <div class="field">
-        <label>Βάρος Χριστίνας (kg)</label>
-        <input type="number" id="weightC" step="0.001" placeholder="π.χ. 4.250">
-      </div>
-      <div class="field">
-        <label>Βάρος Γεωργίας (kg)</label>
-        <input type="number" id="weightG" step="0.001" placeholder="π.χ. 3.900">
-      </div>
-    </div>
-    <button class="btn-primary" onclick="addVisit()">Προσθήκη επίσκεψης</button>
-    <div id="addMsg" class="msg"></div>
-  </div>
-
-  <div id="results">
-    <!-- Last visit results -->
-    <div class="card" id="lastCard">
-      <div class="section-label">Τελευταία επίσκεψη — αποτελέσματα</div>
-      <div id="lastResult"></div>
-    </div>
-
-    <!-- Charts -->
-    <div class="card">
-      <div class="tabs">
-        <button class="tab active" onclick="showTab('weight')">Βάρος</button>
-        <button class="tab" onclick="showTab('daily')">Ανά ημέρα</button>
-        <button class="tab" onclick="showTab('milk')">Γάλα</button>
-      </div>
-
-      <div id="tab-weight" class="chart-section active">
-        <div class="legend">
-          <span><span class="legend-dot" style="background:#B5D4F4;border:1px solid #378ADD"></span>Χριστίνα</span>
-          <span><span class="legend-dot" style="background:#9FE1CB;border:1px solid #1D9E75"></span>Γεωργία</span>
+        <!-- Πίνακας Δεδομένων -->
+        <div class="table-wrapper">
+            <table role="grid">
+                <thead>
+                    <tr>
+                        <th>Ημερομηνία</th>
+                        <th>Χριστίνα (kg)</th>
+                        <th>Αύξηση / Μέρα (Χ)</th>
+                        <th>Γάλα Χριστίνας</th>
+                        <th>Γεωργία (kg)</th>
+                        <th>Αύξηση / Μέρα (Γ)</th>
+                        <th>Γάλα Γεωργίας</th>
+                        <th>Ενέργεια</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Τα δεδομένα θα μπουν εδώ μέσω JavaScript -->
+                </tbody>
+            </table>
         </div>
-        <div class="chart-wrap">
-          <canvas id="chartWeight" role="img" aria-label="Εξέλιξη βάρους Χριστίνας και Γεωργίας ανά επίσκεψη">Εξέλιξη βάρους σε kg ανά επίσκεψη.</canvas>
+
+        <!-- Διαγράμματα -->
+        <h3 style="text-align:center;">Συνολικό Βάρος (kg)</h3>
+        <div class="chart-container">
+            <canvas id="weightChart"></canvas>
         </div>
-        <p class="zoom-hint">Scroll ή pinch για zoom · σύρτε για μετακίνηση</p>
-      </div>
 
-      <div id="tab-daily" class="chart-section">
-        <div class="legend">
-          <span><span class="legend-dot" style="background:#B5D4F4;border:1px solid #378ADD"></span>Χριστίνα</span>
-          <span><span class="legend-dot" style="background:#9FE1CB;border:1px solid #1D9E75"></span>Γεωργία</span>
+        <h3 style="text-align:center;">Αύξηση Βάρους ανά Ημέρα (γραμμάρια)</h3>
+        <div class="chart-container">
+            <canvas id="dailyDiffChart"></canvas>
         </div>
-        <div class="chart-wrap-sm">
-          <canvas id="chartDaily" role="img" aria-label="Αύξηση βάρους σε γραμμάρια ανά ημέρα">Αύξηση g/ημέρα μεταξύ επισκέψεων.</canvas>
+
+        <h3 style="text-align:center;">Εύρος Γάλακτος ανά Γεύμα (ml)</h3>
+        <div class="chart-container">
+            <canvas id="milkChart"></canvas>
         </div>
-        <p class="zoom-hint">Scroll ή pinch για zoom</p>
-      </div>
+    </main>
 
-      <div id="tab-milk" class="chart-section">
-        <div class="legend">
-          <span><span class="legend-dot" style="background:#B5D4F4;border:1px solid #378ADD"></span>Χριστίνα (εύρος)</span>
-          <span><span class="legend-dot" style="background:#9FE1CB;border:1px solid #1D9E75"></span>Γεωργία (εύρος)</span>
-        </div>
-        <div class="chart-wrap">
-          <canvas id="chartMilk" role="img" aria-label="Εύρος γάλακτος σε ml ανά γεύμα για κάθε επίσκεψη">Εύρος ml γάλακτος ανά γεύμα.</canvas>
-        </div>
-        <p class="zoom-hint">Scroll ή pinch για zoom</p>
-      </div>
-    </div>
+    <script>
+        // Αρχικοποίηση μεταβλητών και γραφημάτων
+        let records = JSON.parse(localStorage.getItem('twinsData')) || [];
+        let charts = {};
 
-    <!-- History -->
-    <div class="card">
-      <div class="history-header">
-        <div class="section-label" style="margin-bottom:0">Ιστορικό επισκέψεων</div>
-        <button class="btn-ghost" onclick="clearAll()">Διαγραφή όλων</button>
-      </div>
-      <div id="visitsList"></div>
-    </div>
-  </div>
-</div>
+        const form = document.getElementById('dataForm');
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const date = document.getElementById('visitDate').value;
+            const cWeight = parseFloat(document.getElementById('cWeight').value);
+            const gWeight = parseFloat(document.getElementById('gWeight').value);
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/1.2.1/chartjs-plugin-zoom.min.js"></script>
-<script>
-const STORAGE_KEY = 'didymes-paediatro-v1';
-let visits = [];
-let chartW = null, chartD = null, chartM = null;
+            // Έλεγχος αν υπάρχει ήδη η ημερομηνία και ενημέρωση ή προσθήκη
+            const existingIndex = records.findIndex(r => r.date === date);
+            if(existingIndex >= 0) {
+                records[existingIndex] = { date, cWeight, gWeight };
+            } else {
+                records.push({ date, cWeight, gWeight });
+            }
 
-function load() {
-  try { const r = localStorage.getItem(STORAGE_KEY); if (r) visits = JSON.parse(r); } catch(e) { visits = []; }
-}
-function save() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(visits)); } catch(e) {}
-}
-function fmtDate(d) {
-  const [y,m,day] = d.split('-'); return `${day}/${m}/${y}`;
-}
-function daysBetween(d1, d2) {
-  return Math.round((new Date(d2) - new Date(d1)) / 86400000);
-}
-function milkRange(kg) {
-  return { mn: Math.round((kg * 1.6 / 8) * 10) / 10, mx: Math.round((kg * 1.8 / 8) * 10) / 10 };
-}
+            // Ταξινόμηση ανά ημερομηνία
+            records.sort((a, b) => new Date(a.date) - new Date(b.date));
+            localStorage.setItem('twinsData', JSON.stringify(records));
+            
+            form.reset();
+            updateDashboard();
+        });
 
-function addVisit() {
-  const date = document.getElementById('visitDate').value;
-  const wc = parseFloat(document.getElementById('weightC').value);
-  const wg = parseFloat(document.getElementById('weightG').value);
-  const msg = document.getElementById('addMsg');
-  if (!date) { msg.textContent = 'Παρακαλώ συμπλήρωσε ημερομηνία.'; return; }
-  if (isNaN(wc) || wc <= 0) { msg.textContent = 'Παρακαλώ συμπλήρωσε βάρος Χριστίνας.'; return; }
-  if (isNaN(wg) || wg <= 0) { msg.textContent = 'Παρακαλώ συμπλήρωσε βάρος Γεωργίας.'; return; }
-  if (visits.find(v => v.date === date)) { msg.textContent = 'Υπάρχει ήδη επίσκεψη αυτή την ημερομηνία.'; return; }
-  visits.push({ date, wc, wg });
-  visits.sort((a,b) => a.date.localeCompare(b.date));
-  save();
-  msg.textContent = 'Η επίσκεψη αποθηκεύτηκε!';
-  setTimeout(() => msg.textContent = '', 2500);
-  document.getElementById('weightC').value = '';
-  document.getElementById('weightG').value = '';
-  render();
-}
+        function deleteRecord(date) {
+            records = records.filter(r => r.date !== date);
+            localStorage.setItem('twinsData', JSON.stringify(records));
+            updateDashboard();
+        }
 
-function deleteVisit(i) {
-  if (!confirm('Να διαγραφεί αυτή η επίσκεψη;')) return;
-  visits.splice(i, 1);
-  save();
-  render();
-}
+        // Επεξεργασία δεδομένων για τους υπολογισμούς
+        function processData() {
+            return records.map((rec, index) => {
+                let data = { ...rec };
+                
+                // Υπολογισμός γάλακτος
+                data.cMinMilk = Math.round(rec.cWeight * 160 / 8);
+                data.cMaxMilk = Math.round(rec.cWeight * 180 / 8);
+                data.gMinMilk = Math.round(rec.gWeight * 160 / 8);
+                data.gMaxMilk = Math.round(rec.gWeight * 180 / 8);
 
-function clearAll() {
-  if (!confirm('Να διαγραφούν όλες οι επισκέψεις;')) return;
-  visits = [];
-  save();
-  render();
-}
+                // Υπολογισμός αύξησης βάρους
+                if (index > 0) {
+                    const prev = records[index - 1];
+                    const daysDiff = (new Date(rec.date) - new Date(prev.date)) / (1000 * 60 * 60 * 24);
+                    const safeDays = daysDiff > 0 ? daysDiff : 1;
 
-function showTab(name) {
-  const names = ['weight','daily','milk'];
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', names[i] === name));
-  document.querySelectorAll('.chart-section').forEach(s => s.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-}
+                    data.cDiffGrams = Math.round((rec.cWeight - prev.cWeight) * 1000);
+                    data.cDailyGrams = Math.round(data.cDiffGrams / safeDays);
+                    
+                    data.gDiffGrams = Math.round((rec.gWeight - prev.gWeight) * 1000);
+                    data.gDailyGrams = Math.round(data.gDiffGrams / safeDays);
+                } else {
+                    data.cDiffGrams = 0; data.cDailyGrams = 0;
+                    data.gDiffGrams = 0; data.gDailyGrams = 0;
+                }
+                return data;
+            });
+        }
 
-const zoomOpts = {
-  zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
-  pan: { enabled: true, mode: 'x' }
-};
+        function updateDashboard() {
+            const processed = processData();
+            updateTable(processed);
+            updateCharts(processed);
+        }
 
-function render() {
-  const resDiv = document.getElementById('results');
-  if (visits.length === 0) { resDiv.style.display = 'none'; return; }
-  resDiv.style.display = 'block';
+        function updateTable(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            
+            data.forEach((row, i) => {
+                const formatDate = new Date(row.date).toLocaleDateString('el-GR');
+                const cDiffText = i === 0 ? '-' : `+${row.cDiffGrams}g (${row.cDailyGrams}g/μέρα)`;
+                const gDiffText = i === 0 ? '-' : `+${row.gDiffGrams}g (${row.gDailyGrams}g/μέρα)`;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${formatDate}</strong></td>
+                    <td>${row.cWeight}</td>
+                    <td>${cDiffText}</td>
+                    <td>${row.cMinMilk} - ${row.cMaxMilk} ml</td>
+                    <td>${row.gWeight}</td>
+                    <td>${gDiffText}</td>
+                    <td>${row.gMinMilk} - ${row.gMaxMilk} ml</td>
+                    <td><button style="padding: 0.2rem 0.5rem; background: #d81b60; border: none;" onclick="deleteRecord('${row.date}')">X</button></td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
 
-  // Last visit results
-  const last = visits[visits.length - 1];
-  const prev = visits.length > 1 ? visits[visits.length - 2] : null;
+        function updateCharts(data) {
+            const labels = data.map(r => new Date(r.date).toLocaleDateString('el-GR'));
 
-  let html = '';
-  ['C','G'].forEach(x => {
-    const name = x === 'C' ? 'Χριστίνα' : 'Γεωργία';
-    const cls = x === 'C' ? 'tag-c' : 'tag-g';
-    const wLast = x === 'C' ? last.wc : last.wg;
-    const milk = milkRange(wLast);
-    html += `<span class="name-tag ${cls}">${name}</span>`;
-    html += `<div class="metrics">`;
-    html += `<div class="metric"><div class="mlabel">Βάρος</div><div class="mval">${wLast.toFixed(3)} kg</div></div>`;
-    if (prev) {
-      const wPrev = x === 'C' ? prev.wc : prev.wg;
-      const days = daysBetween(prev.date, last.date);
-      const gain = Math.round((wLast - wPrev) * 1000);
-      const perDay = days > 0 ? Math.round(gain / days) : 0;
-      html += `<div class="metric"><div class="mlabel">Αύξηση (${days} ημ.)</div><div class="mval">${gain >= 0 ? '+' : ''}${gain} g</div></div>`;
-      html += `<div class="metric"><div class="mlabel">Ανά ημέρα</div><div class="mval">${perDay >= 0 ? '+' : ''}${perDay} g</div></div>`;
-    } else {
-      html += `<div class="metric"><div class="mlabel">Αύξηση</div><div class="mval">—</div><div class="msub">Πρώτη επίσκεψη</div></div>`;
-      html += `<div class="metric"><div class="mlabel">Ανά ημέρα</div><div class="mval">—</div></div>`;
-    }
-    html += `</div>`;
-    html += `<div class="metric" style="margin-bottom:${x==='C'?'16':'0'}px"><div class="mlabel">Γάλα ανά γεύμα (×8/ημέρα)</div><div class="mval" style="font-size:16px">${milk.mn}–${milk.mx} ml</div></div>`;
-    if (x === 'C') html += '<hr style="border:none;border-top:0.5px solid var(--border);margin:12px 0">';
-  });
-  document.getElementById('lastResult').innerHTML = html;
+            const zoomOptions = {
+                pan: { enabled: true, mode: 'xy' },
+                zoom: {
+                    wheel: { enabled: true },
+                    pinch: { enabled: true },
+                    mode: 'xy'
+                }
+            };
 
-  const labels = visits.map(v => fmtDate(v.date));
-  const wcArr = visits.map(v => v.wc);
-  const wgArr = visits.map(v => v.wg);
+            // 1. Διάγραμμα Βάρους
+            if (charts.weight) charts.weight.destroy();
+            charts.weight = new Chart(document.getElementById('weightChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Χριστίνα (kg)', data: data.map(r => r.cWeight), borderColor: '#8e24aa', backgroundColor: '#8e24aa', tension: 0.1 },
+                        { label: 'Γεωργία (kg)', data: data.map(r => r.gWeight), borderColor: '#039be5', backgroundColor: '#039be5', tension: 0.1 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { zoom: zoomOptions } }
+            });
 
-  const dailyLabels = labels.slice(1);
-  const dailyC = visits.slice(1).map((v,i) => {
-    const days = daysBetween(visits[i].date, v.date);
-    return days > 0 ? Math.round((v.wc - visits[i].wc) * 1000 / days) : null;
-  });
-  const dailyG = visits.slice(1).map((v,i) => {
-    const days = daysBetween(visits[i].date, v.date);
-    return days > 0 ? Math.round((v.wg - visits[i].wg) * 1000 / days) : null;
-  });
+            // 2. Διάγραμμα Αύξησης ανά Μέρα
+            if (charts.dailyDiff) charts.dailyDiff.destroy();
+            charts.dailyDiff = new Chart(document.getElementById('dailyDiffChart'), {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Χριστίνα (g/μέρα)', data: data.map(r => r.cDailyGrams), backgroundColor: 'rgba(142, 36, 170, 0.7)' },
+                        { label: 'Γεωργία (g/μέρα)', data: data.map(r => r.gDailyGrams), backgroundColor: 'rgba(3, 155, 229, 0.7)' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { zoom: zoomOptions } }
+            });
 
-  const milkCMin = visits.map(v => milkRange(v.wc).mn);
-  const milkCMax = visits.map(v => milkRange(v.wc).mx);
-  const milkGMin = visits.map(v => milkRange(v.wg).mn);
-  const milkGMax = visits.map(v => milkRange(v.wg).mx);
+            // 3. Διάγραμμα Γάλακτος
+            if (charts.milk) charts.milk.destroy();
+            charts.milk = new Chart(document.getElementById('milkChart'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: 'Χριστίνα Min', data: data.map(r => r.cMinMilk), borderColor: 'rgba(142, 36, 170, 0.5)', borderDash: [5, 5] },
+                        { label: 'Χριστίνα Max', data: data.map(r => r.cMaxMilk), borderColor: '#8e24aa' },
+                        { label: 'Γεωργία Min', data: data.map(r => r.gMinMilk), borderColor: 'rgba(3, 155, 229, 0.5)', borderDash: [5, 5] },
+                        { label: 'Γεωργία Max', data: data.map(r => r.gMaxMilk), borderColor: '#039be5' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { zoom: zoomOptions } }
+            });
+        }
 
-  const baseOpts = {
-    responsive: true, maintainAspectRatio: false,
-    plugins: { legend: { display: false }, zoom: zoomOpts },
-    scales: {
-      x: { ticks: { font: { size: 11 }, maxRotation: 45, autoSkip: false } },
-      y: { ticks: { font: { size: 11 } } }
-    }
-  };
-
-  if (chartW) chartW.destroy();
-  chartW = new Chart(document.getElementById('chartWeight'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Χριστίνα', data: wcArr, borderColor: '#378ADD', backgroundColor: 'rgba(55,138,221,0.08)', pointBackgroundColor: '#378ADD', tension: 0.35, fill: false },
-        { label: 'Γεωργία',  data: wgArr, borderColor: '#1D9E75', backgroundColor: 'rgba(29,158,117,0.08)', pointBackgroundColor: '#1D9E75', tension: 0.35, fill: false, borderDash: [5,3] }
-      ]
-    },
-    options: { ...baseOpts, plugins: { ...baseOpts.plugins,
-      tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y.toFixed(3)} kg` } }
-    }, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, title: { display: true, text: 'kg', font: { size: 11 } } } } }
-  });
-
-  if (chartD) chartD.destroy();
-  chartD = new Chart(document.getElementById('chartDaily'), {
-    type: 'bar',
-    data: {
-      labels: dailyLabels,
-      datasets: [
-        { label: 'Χριστίνα', data: dailyC, backgroundColor: '#B5D4F4', borderColor: '#378ADD', borderWidth: 1 },
-        { label: 'Γεωργία',  data: dailyG, backgroundColor: '#9FE1CB', borderColor: '#1D9E75', borderWidth: 1 }
-      ]
-    },
-    options: { ...baseOpts, plugins: { ...baseOpts.plugins,
-      tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y} g/ημέρα` } }
-    }, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, title: { display: true, text: 'g/ημέρα', font: { size: 11 } } } } }
-  });
-
-  if (chartM) chartM.destroy();
-  chartM = new Chart(document.getElementById('chartMilk'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        { label: 'Χρ. min', data: milkCMin, borderColor: '#378ADD', fill: false, borderDash: [4,3], tension: 0.3, pointBackgroundColor: '#378ADD', pointRadius: 3 },
-        { label: 'Χρ. max', data: milkCMax, borderColor: '#378ADD', backgroundColor: 'rgba(55,138,221,0.10)', fill: '-1', tension: 0.3, pointBackgroundColor: '#378ADD', pointRadius: 3 },
-        { label: 'Γεω. min', data: milkGMin, borderColor: '#1D9E75', fill: false, borderDash: [4,3], tension: 0.3, pointBackgroundColor: '#1D9E75', pointRadius: 3 },
-        { label: 'Γεω. max', data: milkGMax, borderColor: '#1D9E75', backgroundColor: 'rgba(29,158,117,0.10)', fill: '-1', tension: 0.3, pointBackgroundColor: '#1D9E75', pointRadius: 3 }
-      ]
-    },
-    options: { ...baseOpts, plugins: { ...baseOpts.plugins,
-      tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.parsed.y.toFixed(1)} ml` } }
-    }, scales: { ...baseOpts.scales, y: { ...baseOpts.scales.y, title: { display: true, text: 'ml / γεύμα', font: { size: 11 } } } } }
-  });
-
-  // History list
-  const listDiv = document.getElementById('visitsList');
-  listDiv.innerHTML = '';
-  if (visits.length === 0) {
-    listDiv.innerHTML = '<div class="empty">Δεν υπάρχουν επισκέψεις ακόμα.</div>';
-    return;
-  }
-  [...visits].reverse().forEach((v, ri) => {
-    const i = visits.length - 1 - ri;
-    const p = i > 0 ? visits[i-1] : null;
-    const days = p ? daysBetween(p.date, v.date) : null;
-    const gainC = p ? Math.round((v.wc - p.wc) * 1000) : null;
-    const gainG = p ? Math.round((v.wg - p.wg) * 1000) : null;
-
-    const row = document.createElement('div');
-    row.className = 'visit-row';
-    let inner = `<div class="vr-top">
-      <span class="vr-date">${fmtDate(v.date)}</span>
-      <span class="vr-kg" style="color:var(--blue)">${v.wc.toFixed(3)} kg</span>
-      <span class="vr-kg" style="color:var(--teal)">${v.wg.toFixed(3)} kg</span>
-      <button class="vr-del" onclick="deleteVisit(${i})" title="Διαγραφή">×</button>
-    </div>`;
-    if (p) {
-      inner += `<div class="vr-gain">
-        Αύξηση (${days} ημ.):
-        <span style="color:var(--blue)">${gainC >= 0 ? '+' : ''}${gainC}g · ${Math.round(gainC/days)}g/ημ.</span>
-        &nbsp;·&nbsp;
-        <span style="color:var(--teal)">${gainG >= 0 ? '+' : ''}${gainG}g · ${Math.round(gainG/days)}g/ημ.</span>
-      </div>`;
-    }
-    row.innerHTML = inner;
-    listDiv.appendChild(row);
-  });
-}
-
-// Init
-document.getElementById('visitDate').valueAsDate = new Date();
-load();
-render();
-</script>
+        // Φόρτωση κατά την πρώτη εκκίνηση
+        updateDashboard();
+    </script>
 </body>
 </html>
