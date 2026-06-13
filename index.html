@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Παρακολούθηση Χριστίνας & Γεωργίας</title>
-    <!-- Χρήση Pico CSS για όμορφο και καθαρό σχεδιασμό αυτόματα -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
-    <!-- Εισαγωγή Chart.js και Zoom Plugin -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
@@ -21,7 +19,6 @@
     <main class="container">
         <h2>Ανάπτυξη Διδύμων: Χριστίνα & Γεωργία</h2>
         
-        <!-- Φόρμα Εισαγωγής -->
         <article>
             <form id="dataForm">
                 <div class="grid">
@@ -33,18 +30,17 @@
                 <div class="grid-2">
                     <label>
                         Βάρος Χριστίνας (kg)
-                        <input type="number" step="0.01" id="cWeight" placeholder="π.χ. 4.5" required>
+                        <input type="number" step="0.001" id="cWeight" placeholder="π.χ. 4.500" required>
                     </label>
                     <label>
                         Βάρος Γεωργίας (kg)
-                        <input type="number" step="0.01" id="gWeight" placeholder="π.χ. 4.3" required>
+                        <input type="number" step="0.001" id="gWeight" placeholder="π.χ. 4.300" required>
                     </label>
                 </div>
-                <button type="submit">Προσθήκη Επίσκεψης</button>
+                <button type="submit" id="submitBtn">Προσθήκη Επίσκεψης</button>
             </form>
         </article>
 
-        <!-- Πίνακας Δεδομένων -->
         <div class="table-wrapper">
             <table role="grid">
                 <thead>
@@ -60,12 +56,11 @@
                     </tr>
                 </thead>
                 <tbody id="tableBody">
-                    <!-- Τα δεδομένα θα μπουν εδώ μέσω JavaScript -->
+                    <tr><td colspan="8">Φόρτωση δεδομένων από το Cloud...</td></tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- Διαγράμματα -->
         <h3 style="text-align:center;">Συνολικό Βάρος (kg)</h3>
         <div class="chart-container">
             <canvas id="weightChart"></canvas>
@@ -82,52 +77,86 @@
         </div>
     </main>
 
-    <script>
-        // Αρχικοποίηση μεταβλητών και γραφημάτων
-        let records = JSON.parse(localStorage.getItem('twinsData')) || [];
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
+        import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore.js";
+
+        // Οι δικές σας ρυθμίσεις Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDpDV_2TKGpycYYaTkVPKEu_r8dEB_C7HA",
+            authDomain: "koritsia-d1e1d.firebaseapp.com",
+            projectId: "koritsia-d1e1d",
+            storageBucket: "koritsia-d1e1d.firebasestorage.app",
+            messagingSenderId: "489728873948",
+            appId: "1:489728873948:web:f3b376eb5d92072d94ab19",
+            measurementId: "G-W7N3891XZY"
+        };
+
+        // Αρχικοποίηση Firebase & Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let records = [];
         let charts = {};
 
+        // Ακρόαση δεδομένων σε πραγματικό χρόνο από το Firestore (Ταξινομημένα ανά ημερομηνία)
+        const q = query(collection(db, "visits"), orderBy("date", "asc"));
+        onSnapshot(q, (snapshot) => {
+            records = [];
+            snapshot.forEach((doc) => {
+                records.push(doc.data());
+            });
+            updateDashboard();
+        });
+
+        // Υποβολή νέας επίσκεψης ή ενημέρωση υπάρχουσας
         const form = document.getElementById('dataForm');
-        form.addEventListener('submit', function(e) {
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Αποθήκευση...";
+
             const date = document.getElementById('visitDate').value;
             const cWeight = parseFloat(document.getElementById('cWeight').value);
             const gWeight = parseFloat(document.getElementById('gWeight').value);
 
-            // Έλεγχος αν υπάρχει ήδη η ημερομηνία και ενημέρωση ή προσθήκη
-            const existingIndex = records.findIndex(r => r.date === date);
-            if(existingIndex >= 0) {
-                records[existingIndex] = { date, cWeight, gWeight };
-            } else {
-                records.push({ date, cWeight, gWeight });
+            try {
+                // Χρησιμοποιούμε την ημερομηνία ως ID εγγράφου για να μην έχουμε διπλότυπα την ίδια μέρα
+                await setDoc(doc(db, "visits", date), { date, cWeight, gWeight });
+                form.reset();
+            } catch (error) {
+                console.error("Σφάλμα κατά την αποθήκευση: ", error);
+                alert("Προέκυψε σφάλμα κατά την αποθήκευση. Ελέγξτε αν έχετε ενεργοποιήσει το Firestore σε Test Mode.");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Προσθήκη Επίσκεψης";
             }
-
-            // Ταξινόμηση ανά ημερομηνία
-            records.sort((a, b) => new Date(a.date) - new Date(b.date));
-            localStorage.setItem('twinsData', JSON.stringify(records));
-            
-            form.reset();
-            updateDashboard();
         });
 
-        function deleteRecord(date) {
-            records = records.filter(r => r.date !== date);
-            localStorage.setItem('twinsData', JSON.stringify(records));
-            updateDashboard();
+        // Διαγραφή εγγραφής από το Firebase
+        window.deleteRecord = async function(date) {
+            if(confirm(`Θέλετε σίγουρα να διαγράψετε την επίσκεψη στις ${new Date(date).toLocaleDateString('el-GR')}?`)) {
+                try {
+                    await deleteDoc(doc(db, "visits", date));
+                } catch (error) {
+                    console.error("Σφάλμα κατά τη διαγραφή: ", error);
+                }
+            }
         }
 
-        // Επεξεργασία δεδομένων για τους υπολογισμούς
+        // Υπολογισμοί δεδομένων
         function processData() {
             return records.map((rec, index) => {
                 let data = { ...rec };
                 
-                // Υπολογισμός γάλακτος
+                // Υπολογισμός εύρους γάλακτος
                 data.cMinMilk = Math.round(rec.cWeight * 160 / 8);
                 data.cMaxMilk = Math.round(rec.cWeight * 180 / 8);
                 data.gMinMilk = Math.round(rec.gWeight * 160 / 8);
                 data.gMaxMilk = Math.round(rec.gWeight * 180 / 8);
 
-                // Υπολογισμός αύξησης βάρους
+                // Υπολογισμός αύξησης βάρους σε σχέση με την προηγούμενη επίσκεψη
                 if (index > 0) {
                     const prev = records[index - 1];
                     const daysDiff = (new Date(rec.date) - new Date(prev.date)) / (1000 * 60 * 60 * 24);
@@ -156,21 +185,26 @@
             const tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
             
+            if(data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8">Δεν υπάρχουν καταχωρημένες επισκέψεις.</td></tr>';
+                return;
+            }
+
             data.forEach((row, i) => {
                 const formatDate = new Date(row.date).toLocaleDateString('el-GR');
-                const cDiffText = i === 0 ? '-' : `+${row.cDiffGrams}g (${row.cDailyGrams}g/μέρα)`;
-                const gDiffText = i === 0 ? '-' : `+${row.gDiffGrams}g (${row.gDailyGrams}g/μέρα)`;
+                const cDiffText = i === 0 ? '-' : `+${row.cDiffGrams}g (${row.cDailyGrams}g/μ)`;
+                const gDiffText = i === 0 ? '-' : `+${row.gDiffGrams}g (${row.gDailyGrams}g/μ)`;
                 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td><strong>${formatDate}</strong></td>
-                    <td>${row.cWeight}</td>
+                    <td>${row.cWeight.toFixed(3)}</td>
                     <td>${cDiffText}</td>
                     <td>${row.cMinMilk} - ${row.cMaxMilk} ml</td>
-                    <td>${row.gWeight}</td>
+                    <td>${row.gWeight.toFixed(3)}</td>
                     <td>${gDiffText}</td>
                     <td>${row.gMinMilk} - ${row.gMaxMilk} ml</td>
-                    <td><button style="padding: 0.2rem 0.5rem; background: #d81b60; border: none;" onclick="deleteRecord('${row.date}')">X</button></td>
+                    <td><button style="padding: 0.2rem 0.5rem; background: #d81b60; border: none; font-weight:bold;" onclick="deleteRecord('${row.date}')">X</button></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -188,7 +222,7 @@
                 }
             };
 
-            // 1. Διάγραμμα Βάρους
+            // 1. Διάγραμμα Συνολικού Βάρους
             if (charts.weight) charts.weight.destroy();
             charts.weight = new Chart(document.getElementById('weightChart'), {
                 type: 'line',
@@ -202,7 +236,7 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { zoom: zoomOptions } }
             });
 
-            // 2. Διάγραμμα Αύξησης ανά Μέρα
+            // 2. Διάγραμμα Αύξησης ανά Ημέρα
             if (charts.dailyDiff) charts.dailyDiff.destroy();
             charts.dailyDiff = new Chart(document.getElementById('dailyDiffChart'), {
                 type: 'bar',
@@ -232,9 +266,6 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { zoom: zoomOptions } }
             });
         }
-
-        // Φόρτωση κατά την πρώτη εκκίνηση
-        updateDashboard();
     </script>
 </body>
 </html>
